@@ -1,0 +1,20 @@
+{
+  "name": "Dev_Onboarding_Task",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-router-dom": "^4.2.2",
+    "react-scripts": "1.0.17",
+    "rimraf": "^2.6.2",
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^0.87.3"
+  },
+  "scripts": {
+    "start": "rimraf ./build && react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
