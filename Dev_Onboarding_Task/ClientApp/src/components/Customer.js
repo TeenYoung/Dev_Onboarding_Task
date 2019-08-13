@@ -1,10 +1,12 @@
 ﻿import React, { Component } from "react";
 import { Icon, Modal, Button, Table, Form } from "semantic-ui-react";
+import Pagination from "./common/Pagination";
+import Axios from "axios";
 
 var dummyData = [
   {
     id: 1,
-    name: "Tim",
+    name: "Timothy Young",
     address: "36 Murdoch St"
   },
   {
@@ -21,26 +23,103 @@ var dummyData = [
     id: 4,
     name: "Wen",
     address: "39 Murdoch St"
+  },
+  {
+    id: 5,
+    name: "Tim",
+    address: "36 Murdoch St"
+  },
+  {
+    id: 6,
+    name: "Ya",
+    address: "37 Murdoch St"
+  },
+  {
+    id: 7,
+    name: "Yang",
+    address: "38 Murdoch St"
+  },
+  {
+    id: 8,
+    name: "Wen",
+    address: "39 Murdoch St"
+  },
+  {
+    id: 9,
+    name: "Tim",
+    address: "36 Murdoch St"
+  },
+  {
+    id: 10,
+    name: "Ya",
+    address: "37 Murdoch St"
+  },
+  {
+    id: 11,
+    name: "Yang",
+    address: "38 Murdoch St"
+  },
+  {
+    id: 12,
+    name: "Wen",
+    address: "39 Murdoch St"
   }
 ];
 
+const apiEndPoint = "https://jsonplaceholder.typicode.com/posts"; //replace
+
 class Customer extends Component {
   state = {
-    customers: dummyData
+    customers: dummyData,
+    pageSize: 5,
+    currentPage: 1,
+    newCustomer: { name: "", address: "" }
   };
 
-  handleEdit = customer => {};
+  //async componentDidMount() {
+  //    const { data: customers } = await Axios.get(apiEndPoint);
+  //    this.setState({ customers });
+  //}
 
-  handleDelete = customer => {
-    const customers = this.state.customers.filter(
-      c => c.id !== customer.id
-    );
+  handleCreate = async () => {
+    const { newCustomer } = this.state;
+    const { data: customer } = await Axios.post(apiEndPoint, newCustomer);
+
+    const customers = [customer, ...this.state.customers];
     this.setState({ customers });
   };
 
-  render() {
-    if (this.state.customers.length === 0)
-      return <h3>Opps, we don't have any customer!</h3>;
+    handleEdit = async (customer) => {
+        //put
+    };
+
+  handleDelete = customer => {
+    const customers = this.state.customers.filter(c => c.id !== customer.id);
+    this.setState({ customers });
+  };
+
+  handleInputChange = ({ currentTarget: input }) => {
+    const newCustomer = { ...this.state.newCustomer };
+    newCustomer[input.name] = input.value;
+    this.setState({ newCustomer });
+  };
+
+  handlePageChange = pageNumber => {
+    this.setState({ currentPage: pageNumber });
+  };
+
+  renderCustomersTable() {
+    const { customers } = this.state;
+    const { length: customersCount } = customers;
+    const { pageSize, currentPage } = this.state;
+
+    if (customersCount === 0) return <h3>Opps, we don't have any customer!</h3>;
+
+    const showCustomers = customers.filter(
+      c =>
+        customers.indexOf(c) >= (currentPage - 1) * pageSize &&
+        customers.indexOf(c) < currentPage * pageSize
+    );
 
     return (
       <Table celled>
@@ -52,8 +131,9 @@ class Customer extends Component {
             <Table.HeaderCell />
           </Table.Row>
         </Table.Header>
+
         <Table.Body>
-          {this.state.customers.map(customer => (
+          {showCustomers.map(customer => (
             <Table.Row key={customer.id}>
               <Table.Cell>{customer.name}</Table.Cell>
               <Table.Cell>{customer.address}</Table.Cell>
@@ -69,13 +149,17 @@ class Customer extends Component {
                   header="Update Customer Info"
                   content={
                     <Form style={{ margin: 30 }}>
-                      <Form.Input required label="Name" />
-                      <Form.Input required label="Address" />
+                      <Form.Input required label="NAME" />
+                      <Form.Input required label="ADDRESS" />
                     </Form>
                   }
                   actions={[
                     "Cancel",
-                    <Button onClick={() => this.handleEdit(customer)} positive>
+                    <Button
+                      key={"edit"}
+                      onClick={() => this.handleEdit(customer)}
+                      positive
+                    >
                       Done
                     </Button>
                   ]}
@@ -105,7 +189,64 @@ class Customer extends Component {
             </Table.Row>
           ))}
         </Table.Body>
+
+        <Table.Footer>
+          <Table.Row>
+            <Table.HeaderCell colSpan="4">
+              <Pagination
+                itemsCount={customersCount}
+                pageSize={pageSize}
+                onPageChange={this.handlePageChange}
+                currentPage={currentPage}
+              />
+            </Table.HeaderCell>
+          </Table.Row>
+        </Table.Footer>
       </Table>
+    );
+  }
+
+  render() {
+    const { name, address } = this.state.newCustomer;
+
+    return (
+      <React.Fragment>
+        <Modal
+          dimmer="blurring"
+          closeOnDimmerClick={false}
+          trigger={
+            <Button primary>
+              <Icon name="user" />New Customer
+            </Button>
+          }
+          header="Create New Customer"
+          content={
+            <Form style={{ margin: 30 }}>
+              <Form.Input
+                required
+                label="NAME"
+                name="name"
+                value={name}
+                onChange={this.handleInputChange}
+              />
+              <Form.Input
+                required
+                label="ADDRESS"
+                name="address"
+                value={address}
+                onChange={this.handleInputChange}
+              />
+            </Form>
+          }
+          actions={[
+            "Cancel",
+            <Button key={"create"} onClick={() => this.handleCreate()} positive>
+              Done
+            </Button>
+          ]}
+        />
+        {this.renderCustomersTable()}
+      </React.Fragment>
     );
   }
 }
