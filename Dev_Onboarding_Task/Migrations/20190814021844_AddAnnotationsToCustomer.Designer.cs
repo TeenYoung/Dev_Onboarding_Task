@@ -3,14 +3,16 @@ using Dev_Onboarding_Task.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Dev_Onboarding_Task.Migrations
 {
     [DbContext(typeof(DotDbContext))]
-    partial class DotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190814021844_AddAnnotationsToCustomer")]
+    partial class AddAnnotationsToCustomer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -66,20 +66,25 @@ var dummyData = [
   }
 ];
 
-const apiEndPoint = "https://jsonplaceholder.typicode.com/posts"; //replace
+const apiEndPoint = "api/Customers";
 
 class Customer extends Component {
   state = {
-    customers: dummyData,
+    customers: [],
     pageSize: 5,
     currentPage: 1,
     newCustomer: { name: "", address: "" }
   };
 
-  //async componentDidMount() {
-  //    const { data: customers } = await Axios.get(apiEndPoint);
-  //    this.setState({ customers });
-  //}
+  async componentDidMount() {
+      const { data: customers } = await Axios.get(apiEndPoint);
+      this.setState({ customers });
+  }
+
+    handleNewCustomer = () => {
+        const newCustomer = { name: "", address: "" };
+        this.setState({ newCustomer });
+    }
 
   handleCreate = async () => {
     const { newCustomer } = this.state;
@@ -87,14 +92,29 @@ class Customer extends Component {
 
     const customers = [customer, ...this.state.customers];
     this.setState({ customers });
-  };
-
-    handleEdit = async (customer) => {
-        //put
     };
 
-  handleDelete = customer => {
-    const customers = this.state.customers.filter(c => c.id !== customer.id);
+    handleEdit = customer => {
+        const { name, address } = customer;
+        const newCustomer = { name, address }
+        this.setState({ newCustomer });
+    }
+
+    handleUpdate = async customer => {
+        const { newCustomer } = this.state;
+        newCustomer.id = customer.id;
+        await Axios.put(apiEndPoint + "/" + customer.id, newCustomer)
+
+        const customers = [...this.state.customers];
+        const i = customers.indexOf(customer);
+        customers[i] = newCustomer
+        this.setState({ customers });
+    };
+
+    handleDelete = async customer => {
+        const { data: deletedCustomer } = await Axios.delete(apiEndPoint + "/" + customer.id)
+
+        const customers = this.state.customers.filter(c => c.id !== deletedCustomer.id);
     this.setState({ customers });
   };
 
@@ -102,7 +122,7 @@ class Customer extends Component {
     const newCustomer = { ...this.state.newCustomer };
     newCustomer[input.name] = input.value;
     this.setState({ newCustomer });
-  };
+    };
 
   handlePageChange = pageNumber => {
     this.setState({ currentPage: pageNumber });
@@ -111,7 +131,8 @@ class Customer extends Component {
   renderCustomersTable() {
     const { customers } = this.state;
     const { length: customersCount } = customers;
-    const { pageSize, currentPage } = this.state;
+      const { pageSize, currentPage } = this.state;
+      const { name, address } = this.state.newCustomer;
 
     if (customersCount === 0) return <h3>Opps, we don't have any customer!</h3>;
 
@@ -119,9 +140,12 @@ class Customer extends Component {
       c =>
         customers.indexOf(c) >= (currentPage - 1) * pageSize &&
         customers.indexOf(c) < currentPage * pageSize
-    );
+      );
 
-    return (
+      
+
+      return (
+        
       <Table celled>
         <Table.Header>
           <Table.Row>
@@ -141,26 +165,30 @@ class Customer extends Component {
                 <Modal
                   dimmer="blurring"
                   closeOnDimmerClick={false}
-                  trigger={
-                    <Button color="yellow">
+                          trigger={
+                              <Button color="yellow" onClick={() => this.handleEdit(customer)}>
                       <Icon name="edit" />EDIT
                     </Button>
                   }
                   header="Update Customer Info"
                   content={
                     <Form style={{ margin: 30 }}>
-                      <Form.Input required label="NAME" />
-                      <Form.Input required label="ADDRESS" />
+                          <Form.Input required label="NAME" name="name"
+                              value={name}
+                              onChange={ this.handleInputChange} />
+                          <Form.Input required label="ADDRESS" name="address"
+                              value={address}
+                              onChange={ this.handleInputChange} />
                     </Form>
                   }
                   actions={[
                     "Cancel",
                     <Button
                       key={"edit"}
-                      onClick={() => this.handleEdit(customer)}
+                      onClick={() => this.handleUpdate(customer)}
                       positive
                     >
-                      Done
+                      Update
                     </Button>
                   ]}
                 />
@@ -214,8 +242,8 @@ class Customer extends Component {
         <Modal
           dimmer="blurring"
           closeOnDimmerClick={false}
-          trigger={
-            <Button primary>
+                trigger={
+                    <Button primary onClick={this.handleNewCustomer}>
               <Icon name="user" />New Customer
             </Button>
           }
@@ -241,7 +269,7 @@ class Customer extends Component {
           actions={[
             "Cancel",
             <Button key={"create"} onClick={() => this.handleCreate()} positive>
-              Done
+              Create
             </Button>
           ]}
         />
